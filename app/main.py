@@ -3,6 +3,12 @@ from loguru import logger
 from contextlib import asynccontextmanager
 
 
+# The function get_data goes into the folder personnal_info and get the .txt file my_info.txt and return the content of the file
+def get_data():
+    with open("app/personnal_info/my_info.txt") as f:
+        return f.read()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: You can add initialization code here
@@ -19,6 +25,8 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/form")
 def form():
+    data = get_data()
+    logger.info(data)
     return {"message": "Hello World"}
 
 
