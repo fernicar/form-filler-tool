@@ -1,3 +1,5 @@
+import ollama from 'ollama'
+
 function extractFormData() {
   // Get all form elements inside the form
   const form = document.querySelector('#application-form');
@@ -66,6 +68,7 @@ function setFormData(formData) {
   });
 }
 
+
 export default defineContentScript({
   matches: ['*://*.google.com/*', '*://*.lever.co/*', '*://*.lever.co/*'],
   main() {
@@ -88,12 +91,6 @@ export default defineContentScript({
       } else if (message.type === "set_fields" && message.content) {
         // Set input field values based on message.content
         const { content } = message;
-        // Object.entries(content).forEach(([inputId, inputValue]) => {
-        //   const input = document.getElementById(inputId);
-        //   if (input && input.tagName === "INPUT" && input.type === "text") {
-        //     input.value = inputValue;
-        //   }
-        // });
         console.log("Updated fields", content);
         setFormData(content);
         return { success: true };

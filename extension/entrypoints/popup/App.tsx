@@ -2,38 +2,29 @@ import { useState } from 'react';
 import reactLogo from '@/assets/react.svg';
 import wxtLogo from '/wxt.svg';
 import './App.css';
-
-
-function findFilledValues(extractedFields) {
-    // const data = extractedFields.response.reduce((acc, field) => {
-    //     // Example: Modify value (you can customize this as needed)
-    //     acc[field.name] = field.name; // Set the value as uppercase ID
-    //     return acc;
-    //   }, {});
-
-    const data = {
-        "name": "John Doe",
-        "email": "johndoe@gmail.com",
-        "phone": "+33783926745",
-        "location": "Paris"
-    };
-    return data;
-}
+import { getInfo, findFilledValues_transformerjs, findFilledValues_fastapi } from './requests';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [text, setText] = useState<string>('');
   const [fields, setFields] = useState(null); // State to store the fields information
   const [response, setResponse] = useState(null); // State to store response from set_fields
 
+  const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setText(event.target.value); // Update the state with the current value of the textarea
+  };
+
   const sendMessage = async () => {
     try {
+      console.log('Textarea content:', text);
+
       // Send get_fields message to get the field information
       const fieldInfo = await browser.runtime.sendMessage({ type: 'get_fields' });
       console.log('Field info:', fieldInfo[0].response);
+      // setFields(fieldInfo[0].response);
       
       // Create a new dictionary to send back with updated field values
-      const updatedFields = findFilledValues(fieldInfo[0].response);
-      setFields(updatedFields);
+      const updatedFields = await findFilledValues_transformerjs(fieldInfo[0].response);
+      // setFields(updatedFields);
 
       // Send set_fields message with updated fields
       const updateResponse = await browser.runtime.sendMessage({
@@ -59,13 +50,16 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>WXT + React</h1>
+      <h1>Fill Me In</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
+        <textarea
+                value={text}
+                onChange={handleTextareaChange}
+                placeholder="Type something here..."
+                style={{ width: '100%', height: '100px', marginBottom: '10px' }}
+        />
         <button onClick={() => sendMessage()}>
-        send message
+            Fill me !
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
