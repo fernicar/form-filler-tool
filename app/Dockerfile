@@ -11,4 +11,4 @@ RUN poetry install --no-interaction --no-ansi --no-dev
 COPY . /app
 
 EXPOSE 8080
-CMD ["python", "app/main.py"]
+CMD ["python", "-m", "main"]

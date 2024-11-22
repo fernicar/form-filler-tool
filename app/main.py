@@ -11,7 +11,7 @@ import json
 
 # The function get_data goes into the folder personnal_info and get the .txt file my_info.txt and return the content of the file
 def get_data():
-    with open("app/personnal_info/my_info.txt") as f:
+    with open("personnal_info/my_info.txt") as f:
         return f.read()
 
 
@@ -105,11 +105,12 @@ async def health_check():
 
 
 @app.post("/form")
-def form(json_data: Dict[str, Optional[str]]) -> Dict[str, Optional[str]]:
-    data = get_data()
-    logger.info(data)
+def form(
+    user_info: str, json_data: Dict[str, Optional[str]]
+) -> Dict[str, Optional[str]]:
+    logger.info(user_info)
 
-    response = generate_answer_ollama(data, json_data)
+    response = generate_answer_ollama(user_info, json_data)
     logger.info(response)
     logger.info(type(response))
 
