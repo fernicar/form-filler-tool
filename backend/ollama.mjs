@@ -4,13 +4,16 @@
 //        ollama pull llama3.2:1b
 //        npm install --save ollama
 //       node kiwi.mjs
-
-
 import ollama from 'ollama'
+import fs from 'fs'
+
+// load message from a txt file
+const message = fs.readFileSync('prompt.txt', 'utf8')
 
 const response = await ollama.chat({
   model: 'llama3.2:1b',
-  messages: [{ role: 'user', content: 'You are an intelligent scheduling assistant. Your job is to convert short, informal instructions into polite and professional messages that can be sent directly to the recipient to request a service or schedule an appointment. Analyze the input to extract key details:    Time and date of the meeting or service. Recipient type (e.g., barber, doctor, restaurant, etc.).           Service requested (if provided).    Construct a polite and concise message based on this information. The tone should be courteous and professional'}],
+  format: 'json',
+  messages: [{ role: 'user', content: message}],
 })
 // ⚠️ Ceci peut prendre beaucoup de temps car on attend la réponse complète
 console.log(response.message.content)
