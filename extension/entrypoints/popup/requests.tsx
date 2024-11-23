@@ -1,9 +1,5 @@
-import { pipeline } from '@huggingface/transformers';
 
-const classifier = await pipeline('zero-shot-classification', 'Xenova/nli-deberta-v3-xsmall');
-
-
-async function getInfo(field_name, label_list, data) {
+async function getInfo(field_name, label_list, data, classifier) {
     const output = await classifier(field_name, label_list, { multi_label: false });
     const choice = output.labels[0];
     if (choice === "other") {
@@ -19,7 +15,7 @@ async function getInfo(field_name, label_list, data) {
     }
 }
 
-async function mapFields(extractedFields, data) {
+async function mapFields(extractedFields, data, classifier) {
     const label_list = Object.keys(data);
     label_list.push("other");
     console.log("LABELS LIST", label_list);
@@ -29,7 +25,7 @@ async function mapFields(extractedFields, data) {
       let value = null;
 
       if (field.type === "text" || field.type === "textarea" || field.type === "email") {
-        value = await getInfo(field.name, label_list, data); // Assume getInfo is an async function
+        value = await getInfo(field.name, label_list, data, classifier); // Assume getInfo is an async function
       } else {
         console.log("Field type not taken into account:", field.type);
       }
@@ -45,7 +41,7 @@ async function mapFields(extractedFields, data) {
     return filling_dict;
 }
 
-export async function findFilledValues_transformerjs(extractedFields) {
+export async function findFilledValues_transformerjs(extractedFields, classifier) {
     // HARDCODED Version
     const user_data = {
         "name": "John Doe bro",
@@ -54,7 +50,7 @@ export async function findFilledValues_transformerjs(extractedFields) {
         "phone number": "+331234567890",
         "postal address": "1 rue du paradis, 75007"
     };
-    const filling_dict = await mapFields(extractedFields, user_data);
+    const filling_dict = await mapFields(extractedFields, user_data, classifier);
     return filling_dict;
 }
 
@@ -75,7 +71,7 @@ async function getUserData(text, extractedFields) {
             "user_info": text,
             "json_data": dict
         });
-        console.log(payload);
+        console.log("PAYLOAD", payload);
         const url = 'http://localhost:8080/form';
 
         // Make the POST request using fetch
@@ -103,8 +99,8 @@ async function getUserData(text, extractedFields) {
     }
 }
 
-export async function findFilledValues_fastapi(text, extractedFields) {
+export async function findFilledValues_fastapi(text, extractedFields, classifier) {
     const user_data = await getUserData(text, extractedFields);
-    const filling_dict = await mapFields(extractedFields, user_data);
+    const filling_dict = await mapFields(extractedFields, user_data, classifier);
     return filling_dict;
 }

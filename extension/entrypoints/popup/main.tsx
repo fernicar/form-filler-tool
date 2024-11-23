@@ -5,6 +5,8 @@ import './style.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <App
+        style={{ width: '100%', height: '100vh'}}
+    />
   </React.StrictMode>,
 );

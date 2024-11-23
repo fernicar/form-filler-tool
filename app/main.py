@@ -47,7 +47,7 @@ def generate_answer_ollama(
     resp = ollama_model.invoke("How are you")
     logger.info(resp)
 
-    values_dict = "\n".join({f'    "{key}": "<value>"' for key in input_dict})
+    values_dict = "\n".join({f'    "{key}": ""' for key in input_dict})
 
     prompt = f"""You are a system specialized in processing and structuring text-based data. Your task is to analyze the provided text and extract relevant information into a structured format suitable for automated form-filling. Follow the schema provided below and ensure the output is valid JSON:
 
