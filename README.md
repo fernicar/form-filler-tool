@@ -44,3 +44,11 @@ This is a game changer for people that fill a lot of forms, like students, job s
 TLDR :
   - Save time (filling forms rapidly)
   - Save user's privacy (no data is shared with any external device)
+
+Client profiles :
+    - Students (Internships, Events, ...)
+    - Job seekers
+    - People looking for a new place to live 
+  In general :
+    - People who care about their privacy
+    - People who care about their time
