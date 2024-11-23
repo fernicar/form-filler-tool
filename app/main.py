@@ -5,7 +5,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import SystemMessagePromptTemplate
 from langchain_core.prompts import HumanMessagePromptTemplate
 from langchain_core.prompts import PromptTemplate
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 import json
 
 
@@ -106,7 +106,8 @@ async def health_check():
 
 @app.post("/form")
 def form(
-    user_info: str, json_data: Dict[str, Optional[str]]
+    user_info: str,
+    json_data: List[Dict[str, Optional[str]]],
 ) -> Dict[str, Optional[str]]:
     logger.info(user_info)
 
