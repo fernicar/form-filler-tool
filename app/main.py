@@ -5,8 +5,19 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import SystemMessagePromptTemplate
 from langchain_core.prompts import HumanMessagePromptTemplate
 from langchain_core.prompts import PromptTemplate
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 import json
+
+from pydantic import BaseModel
+
+
+class FormRequest(BaseModel):
+    """
+    Pydantic model to define the structure of the request body.
+    """
+
+    user_info: str
+    json_data: Dict[str, Optional[str]]
 
 
 # The function get_data goes into the folder personnal_info and get the .txt file my_info.txt and return the content of the file
@@ -106,18 +117,13 @@ async def health_check():
 
 @app.post("/form")
 def form(
-    user_info: str,
-    json_data: List[Dict[str, Optional[str]]],
+    form_request: FormRequest,
 ) -> Dict[str, Optional[str]]:
+    user_info = form_request.user_info
+    json_data = form_request.json_data
     logger.info(user_info)
 
-    dict = {}
-
-    for input_field in json_data:
-        if input_field.get("type") == "text" or input_field.get("type") == "textarea":
-            dict[input_field.get("name")] = input_field.get("value")
-
-    response = generate_answer_ollama(user_info, dict)
+    response = generate_answer_ollama(user_info, json_data)
     logger.info(response)
     logger.info(type(response))
 
