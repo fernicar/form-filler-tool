@@ -1,14 +1,19 @@
-FROM python:3.11
+# Use the official Python base image
+FROM python:3.12-slim
 
+# Set the working directory inside the container
 WORKDIR /app
 
-RUN pip install poetry
-COPY ./pyproject.toml /app/pyproject.toml
-COPY ./poetry.lock /app/poetry.lock
-RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction --no-ansi --no-dev
+# Copy the requirements file to the working directory
+COPY requirements.txt .
 
-COPY . /app
+# Install the Python dependencies
+RUN pip install -r requirements.txt
+
+# Copy the application code to the working directory
+COPY . .
 
 EXPOSE 8080
-CMD ["python", "-m", "main"]
+
+# Run the FastAPI application using uvicorn server
+CMD ["python", "main.py"]
