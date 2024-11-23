@@ -1,2 +1,4 @@
 .venv
 main.cpython*
+notebooks/
+ollama_data/

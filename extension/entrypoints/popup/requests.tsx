@@ -1,44 +1,31 @@
-import { pipeline } from '@huggingface/transformers';
 
-const classifier = await pipeline('zero-shot-classification', 'Xenova/nli-deberta-v3-xsmall');
-const user_data = {
-    "name": "John Doe bro",
-    "email": "johndoebro@gmail.com",
-    "company": "johndoecorp",
-    "phone number": "+331234567890",
-    "postal address": "1 rue du paradis, 75007"
-};
-const labels = Object.keys(user_data);
-labels.push("other");
-
-
-async function getInfo(field_name) {
-    const output = await classifier(field_name, labels, { multi_label: false });
+async function getInfo(field_name, label_list, data, classifier) {
+    const output = await classifier(field_name, label_list, { multi_label: false });
     const choice = output.labels[0];
     if (choice === "other") {
         console.log("NO MATCH", field_name);
         return null;
     } else {
-        console.log("MATCH", field_name, choice, user_data[choice]);
-        const choice_value = user_data[choice];
+        console.log("MATCH", field_name, choice, data[choice]);
+        const choice_value = data[choice];
         const choice_score = output.scores[0];
-        const res = `${choice_value} -- ${choice_score}`
+        //const res = `${choice_value} -- ${choice_score}`
+        const res = choice_value
         return res;
     }
 }
 
-export async function findFilledValues_transformerjs(extractedFields) {
-    console.log("EXTRACTEDFIELDS", extractedFields);
-
+async function mapFields(extractedFields, data, classifier) {
+    const label_list = Object.keys(data);
+    label_list.push("other");
+    console.log("LABELS LIST", label_list);
     const filling_dict = {};
 
     for (const field of extractedFields) {
       let value = null;
 
-      if (field.type === "email") {
-        value = user_data["email"];
-      } else if (field.type === "text" || field.type === "textarea") {
-        value = await getInfo(field.name); // Assume getInfo is an async function
+      if (field.type === "text" || field.type === "textarea" || field.type === "email") {
+        value = await getInfo(field.name, label_list, data, classifier); // Assume getInfo is an async function
       } else {
         console.log("Field type not taken into account:", field.type);
       }
@@ -51,21 +38,41 @@ export async function findFilledValues_transformerjs(extractedFields) {
 
     console.log("FILLING DICT", filling_dict);
 
-    // const filling_dict = {
-    //     "name": "John Doe",
-    //     "email": "johndoe@gmail.com",
-    //     "phone": "+33783926745",
-    //     "location": "Paris"
-    // };
-    
     return filling_dict;
 }
 
-export async function findFilledValues_fastapi(extractedFields) {
+export async function findFilledValues_transformerjs(extractedFields, classifier) {
+    // HARDCODED Version
+    const user_data = {
+        "name": "John Doe bro",
+        "email": "johndoebro@gmail.com",
+        "company": "johndoecorp",
+        "phone number": "+331234567890",
+        "postal address": "1 rue du paradis, 75007"
+    };
+    const filling_dict = await mapFields(extractedFields, user_data, classifier);
+    return filling_dict;
+}
+
+async function getUserData(text, extractedFields) {
     console.log("EXTRACTEDFIELDS", extractedFields);
     try {
-        // Construct the URL
-        const url = 'http://localhost:8080/';
+        const dict = {};
+
+        extractedFields.forEach(inputField => {
+          if (inputField.type === 'text' || inputField.type === 'textarea' || inputField.type === 'email') {
+            dict[inputField.name] = "<value>";
+            console.log("No Skip:", inputField.name, inputField.type);
+          } else {
+            console.log("Skip:", inputField.name, inputField.type);
+          }
+        });
+        const payload = JSON.stringify({
+            "user_info": text,
+            "json_data": dict
+        });
+        console.log("PAYLOAD", payload);
+        const url = 'http://localhost:8080/form';
 
         // Make the POST request using fetch
         const response = await fetch(url, {
@@ -73,11 +80,12 @@ export async function findFilledValues_fastapi(extractedFields) {
             headers: {
                 'Content-Type': 'application/json' // Specify JSON format
             },
-            body: JSON.stringify(extractedFields) // Stringify the extractedFields object
+            body: payload // Stringify the extractedFields object
         });
 
         // Check if the response is OK (status in range 200-299)
         if (!response.ok) {
+            console.log(response.json());
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
@@ -91,3 +99,8 @@ export async function findFilledValues_fastapi(extractedFields) {
     }
 }
 
+export async function findFilledValues_fastapi(text, extractedFields, classifier) {
+    const user_data = await getUserData(text, extractedFields);
+    const filling_dict = await mapFields(extractedFields, user_data, classifier);
+    return filling_dict;
+}

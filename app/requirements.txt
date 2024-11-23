@@ -1,0 +1,5 @@
+fastapi
+loguru
+langchain-ollama
+langchain-core
+uvicorn

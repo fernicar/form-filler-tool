@@ -3,11 +3,15 @@ services:
     build:
       context: ./ollama
       dockerfile: Dockerfile
-    container_name: ollama_service
-    ports:
-      - "11434:11434"
+    container_name: ollama
     volumes:
       - ./ollama_data:/data
+    environment:
+      OLLAMA_ORIGINS: "*"
+    networks:
+      - app
+    ports:
+      - "11435:11434"
   app:
     build:
       context: ./app
@@ -17,6 +21,11 @@ services:
       - "8080:8080"
     depends_on:
       - ollama
+    networks:
+      - app
   
 volumes:
   ollama_data:
+
+networks:
+  app:

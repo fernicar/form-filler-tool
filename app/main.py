@@ -1,10 +1,7 @@
 from fastapi import FastAPI
 from loguru import logger
 from contextlib import asynccontextmanager
-from langchain_community.llms import Ollama
-from langchain_core.prompts import SystemMessagePromptTemplate
-from langchain_core.prompts import HumanMessagePromptTemplate
-from langchain_core.prompts import PromptTemplate
+from langchain_ollama import OllamaLLM
 from typing import Dict, Optional
 import json
 
@@ -26,32 +23,13 @@ def get_data():
         return f.read()
 
 
-def load_llama3() -> Ollama:
+def load_model() -> OllamaLLM:
     """
     Load the LLAMA3 model from OLLAMA.
     """
 
-    ollama_client = Ollama(base_url="http://localhost:11434", model="llama3")
-
-    system_message = """
-        You are an expert AI data extraction assistant specialized in processing text-based information. 
-        Your primary objective is to accurately analyze input text and extract structured information.
-
-        Key Guidelines:
-        - Extract information precisely from the given text
-        - Be concise and accurate
-        - Use null for missing information
-        - Ensure output is valid, parseable JSON
-        - Do not invent or assume information not present in the text"""
-
-    SystemMessagePromptTemplate(
-        prompt=PromptTemplate(
-            input_variables=[],  # No input variables for the system message
-            template=system_message,
-        )
-    )
-    HumanMessagePromptTemplate(
-        prompt=PromptTemplate(input_variables=["input"], template="{input}")
+    ollama_client = OllamaLLM(
+        base_url="http://ollama:11434", model="llama3.2:1b", format="json"
     )
 
     return ollama_client
@@ -59,41 +37,37 @@ def load_llama3() -> Ollama:
 
 def generate_answer_ollama(
     input_text: str,
-    dict: Dict[str, Optional[str]],
+    input_dict: Dict[str, Optional[str]],
 ) -> str:
     """
     Generate a summary for a given text using the OLLAMA model.
     """
 
-    ollama_model = load_llama3()
+    ollama_model = load_model()
+    resp = ollama_model.invoke("How are you")
+    logger.info(resp)
 
-    aux_prompt = ""
-    for key, value in dict.items():
-        aux_prompt += f'"{key}": <extracted {key} or null>,'
-    prompt = f"""
-    Task: Extract information from the following text and format the response EXACTLY as specified.
+    values_dict = "\n".join({f'    "{key}": ""' for key in input_dict})
 
-    Input: {input_text}
+    prompt = f"""You are a system specialized in processing and structuring text-based data. Your task is to analyze the provided text and extract relevant information into a structured format suitable for automated form-filling. Follow the schema provided below and ensure the output is valid JSON:
 
-    STRICT OUTPUT REQUIREMENTS:
-    1. You MUST respond ONLY in the following JSON format:
-    {{{aux_prompt}}}
+Schema:
+JSON
+{{
+{values_dict}
+}}
 
-    CRITICAL INSTRUCTIONS:
-    - If ANY information is missing, use null
-    - Do NOT add ANY additional text or explanation
-    - The output MUST be a valid JSON that can be parsed directly
-    - Be precise in extraction
-    - Only use information explicitly mentioned in the text
+Replace <value> with the corresponding information from the text. If any field is not present in the input text, use null or leave it empty please.
 
-    EXAMPLE FORMAT:
-    {{{aux_prompt}}}
 
-    Respond ONLY with the JSON, exactly matching this structure."""
+Input Text/Document:
+{input_text}
+"""
 
-    response = ollama_model(prompt)
-
-    return response
+    logger.info(prompt)
+    resp = ollama_model.invoke(prompt)
+    logger.info(resp)
+    return resp
 
 
 @asynccontextmanager
@@ -122,6 +96,7 @@ def form(
     user_info = form_request.user_info
     json_data = form_request.json_data
     logger.info(user_info)
+    logger.info(json_data)
 
     response = generate_answer_ollama(user_info, json_data)
     logger.info(response)

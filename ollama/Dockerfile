@@ -1,7 +1,11 @@
-# Use the ollama base image
-FROM ollama/ollama:latest 
+FROM ollama/ollama
 
-EXPOSE 11434
+ENV APP_HOME=/home
 
-# Start the server (replace with the appropriate command to start the server if needed)
-CMD ["sh", "-c", "ollama pull llama3 && ollama serve"]
+WORKDIR $APP_HOME
+
+COPY . .
+
+RUN chmod +x pull-models.sh
+
+ENTRYPOINT ["/usr/bin/bash", "pull-models.sh"]
