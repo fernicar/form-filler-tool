@@ -33,3 +33,14 @@ npm run dev
 - Try other HF models for zero shot text classification (cf transformers.js Readme.md)
 - Find business plan
 - Find typical client profiles
+
+## Ideas for Pitch
+People today fill a lot of forms, a lot. And it's a pain. We have a solution for that. An extention that knows how you are, your motivations, your skills, your experiences, your hobbies, your contact information, and more
+
+This exention is powered by a on device "tailored" model that is able to fill forms for you without you having to type anything. Without sharing everything about you to the world (google, ...).
+
+This is a game changer for people that fill a lot of forms, like students, job seekers, people that are looking for a new place to live, etc. People who care about their privacy. People who care about their time.
+
+TLDR :
+  - Save time (filling forms rapidly)
+  - Save user's privacy (no data is shared with any external device)
