@@ -79,7 +79,7 @@ function App() {
         </button>
       </div>
       <p className="read-the-docs">
-      Fill your infos one time and save your time for life.
+        Enter your details once, and save time for the moments that matter.
       </p>
     </>
   );
