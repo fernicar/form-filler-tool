@@ -1,13 +1,13 @@
-version: "3.9"
-
 services:
   ollama:
-      image: ollama/ollama:latest  # Replace with the actual Ollama Docker image name
-      container_name: ollama_service
-      ports:
-        - "11434:11434"
-      volumes:
-        - ./ollama_data:/data
+    build:
+      context: ./ollama
+      dockerfile: Dockerfile
+    container_name: ollama_service
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama_data:/data
   app:
     build:
       context: ./app

@@ -110,7 +110,13 @@ def form(
 ) -> Dict[str, Optional[str]]:
     logger.info(user_info)
 
-    response = generate_answer_ollama(user_info, json_data)
+    dict = {}
+
+    for input_field in json_data:
+        if input_field.get("type") == "text" or input_field.get("type") == "textarea":
+            dict[input_field.get("name")] = input_field.get("value")
+
+    response = generate_answer_ollama(user_info, dict)
     logger.info(response)
     logger.info(type(response))
 
