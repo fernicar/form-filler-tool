@@ -15,11 +15,11 @@ cd extensions
 npm run dev:firefox
 ```
 
-or simply 
+or for chrome simply run 
 
 ```
 cd extensions
-npm run dev:firefox
+npm run dev
 ```
 
 ## TODOS
