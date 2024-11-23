@@ -41,14 +41,17 @@ This exention is powered by a on device "tailored" model that is able to fill fo
 
 This is a game changer for people that fill a lot of forms, like students, job seekers, people that are looking for a new place to live, etc. People who care about their privacy. People who care about their time.
 
-TLDR :
+*TLDR*:
   - Save time (filling forms rapidly)
   - Save user's privacy (no data is shared with any external device)
 
-Client profiles :
+*Client profiles* :
     - Students (Internships, Events, ...)
     - Job seekers
     - People looking for a new place to live 
   In general :
     - People who care about their privacy
     - People who care about their time
+
+*Business model*:
+    The most attractive model is a freemium model. The free version will be limited in the number of forms that can be filled per month. The premium version will have no limits. (We can also think about a one time payment for the premium version) or montly subscription (5 forms free per month, unlimited X$/month)
