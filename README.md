@@ -1,91 +1,148 @@
-# Fill Me In
+# Interruptible Smart Autofill System
 
-## Overview
+## Description
 
-Save time and eliminate the hassle of filling out web forms with the "Fill Me In" extension. Store your essential information locally and let the extension automatically complete forms for you with a single click. Say goodbye to repetitive typing and hello to a faster, more seamless browsing experience.
+A user-controlled autofill tool for browser-based forms that integrates runtime user prompts, enabling intelligent form filling with per-field intervention. By adapting `arthurbabin/ai-form-filler`, this project introduces reactive logic that detects label text on survey forms and pauses execution to request manual input from the user before completing the field. It combines autofill precision with human judgment, particularly for contexts where fields cannot be programmatically filled without semantic awareness.
 
-### Demo Video
+## Functionality
 
-[Watch the Demo Video](DemoVideo.webm)
+### Core Features (`model.py`)
 
-> Note: Replace this with the appropriate video link or embed.
+- Scan form fields and associated labels using DOM traversal and heuristics.
+- Determine whether a field qualifies for manual injection based on label keywords (e.g. survey questions).
+- For qualifying fields:
+  - Trigger runtime `prompt()` or overlay input UI to allow user to type content.
+  - Store and reuse responses when relevant (optional).
+- For non-interactive fields (e.g. dates, names):
+  - Autofill using preconfigured or AI-generated values.
+- Provide toggles for autofill modes: "Passive", "Interactive", "Full Manual".
+- Include debug/preview mode to test which fields are detected and what behavior is applied.
 
-## Setup Instructions
+### User Interface (`main.py`)
 
-To get started with "Fill Me In", follow the steps below:
+Under default PySide6 settings:
 
-1. **Start Docker Container**
+- A main window titled "Smart Autofill Manager" with:
+  - **Field Preview Pane**: Tree or list view showing detected fields and their labels.
+  - **Mode Selector**: Dropdown with autofill modes ("Passive", "Interactive", "Manual").
+  - **Response Cache Manager**: Table view showing saved responses per label.
+  - **Trigger Panel**:
+    - Button: "Scan Current Page"
+    - Button: "Begin Autofill"
+  - **Runtime Input Dialog**: When triggered during interrupt mode, displays the label text and a text box for manual response entry.
 
-   ```bash
-   docker compose up -d --build
-   ```
+Layouts can use `QVBoxLayout` for stacking sections and `QFormLayout` for response editing.
 
-   _Wait briefly as Ollama downloads the model._
+## Technical Implementation
 
-2. **Install Dependencies for the Extension**
+### Architecture
 
-   ```bash
-   cd extensions
-   npm install
-   npm run dev:firefox
-   ```
+The application is split into two main components:
+- `model.py`: Contains all the application logic, data handling, and state management. It is decoupled from the UI.
+- `main.py`: Implements the user interface using PySide6 and handles user interactions, signaling the model to perform actions.
 
-   For Chrome, simply run:
+### Data Structures (`model.py`)
 
-   ```bash
-   cd extensions
-   npm run dev
-   ```
+```json
+{
+  "field": {
+    "id": "input_1",
+    "type": "text",
+    "label": "What is your opinion on X?",
+    "autofill_mode": "interrupt",
+    "value": null
+  },
+  "runtimePromptQueue": [
+    {
+      "fieldId": "input_1",
+      "labelText": "What is your opinion on X?"
+    }
+  ],
+  "profiles": {
+    "default": {
+      "fullName": "John Doe",
+      "email": "john@example.com"
+    }
+  }
+}
+```
 
-3. **Try it Out**
-   You can test it by applying to a position in New York:
-   [Ekimetrics - VIE in New York](https://jobs.lever.co/ekimetrics/c62e4fd4-acd5-4860-857a-15a6797696be/apply)
+### User Interaction and Event Handling
 
-## Features & Benefits
+- When user clicks "Scan Page":
+  - `model.py` scans DOM, generates field list.
+  - List is sent to UI (`main.py`) for preview.
+- On "Begin Autofill":
+  - Loop begins in `model.py`; each field processed:
+    - If field is interrupt mode:
+      - Signal sent to `main.py` to invoke runtime dialog.
+      - Response captured and passed back to `model.py`.
+    - If field is passive mode:
+      - Autofill proceeds silently.
+- Updates reflected live in the Field Preview Pane.
 
-- **Save Time**: Automate the process of filling out forms with a single click.
-- **Protect Privacy**: Keep your data safe by storing it locally. No external servers involved.
+### Input and Output Specifications
 
-## TODO List
+**Input**:
+- Browser DOM (via content script or automation).
+- User-entered manual responses (via UI).
+- Predefined profiles.
 
-- Implement retry mechanism on error when the JSON format is not respected by the Ollama model.
-- Save the output of `GetUserData` in storage using `JSON.stringify` and reload using `JSON.parse`. This will allow the extension to retain field values without querying the Ollama model every time.
-- Explore publishing the extension ([guide to publishing](https://wxt.dev/guide/essentials/publishing.html)).
-- Test additional Ollama models.
-- Experiment with Hugging Face models for zero-shot text classification (refer to transformers.js ReadMe).
-- Develop a business plan.
-- Identify target client profiles.
+**Output**:
+- Filled form fields in the browser.
+- Optional export of autofill logs or session data (JSON or text format).
+- Debug output visible in Field Preview Pane.
 
-## Pitch Ideas
+### Dependencies and Third-Party Integrations
 
-Today, people spend an excessive amount of time filling out forms. We have a solution for that—an extension that knows your profile: your motivations, skills, experiences, hobbies, contact information, and more.
+- `PySide6 >= 6.9.0` (GUI)
+- `requests` (if using external AI APIs)
+- Optional:
+  - `ollama` or `openai` module (if adapting AI field logic)
+  - `selenium` or `pyppeteer` (for browser automation fallback)
+- Uses source logic from `arthurbabin/ai-form-filler`
 
-Our extension is powered by an on-device "tailored" model capable of filling out forms for you—all while keeping your data private. Unlike some alternatives, your personal information stays with you, not with external entities like Google.
+### Error Handling and Validation
 
-**Who is it for?**
+- Invalid field targets: Show visual cue in UI and skip field.
+- User cancels runtime prompt: Log and skip field.
+- DOM query failures: Log warning; continue execution.
+- Input validation (e.g., required fields): Alert user after scan with warnings.
+- API errors (if used): Present retry option with message.
 
-- Students filling out internship or event applications
-- Job seekers
-- Individuals searching for a new home
-- People who value their privacy
-- Anyone who wants to save time
+### Technical Constraints and Non-Functional Requirements
 
-**Why choose us?**
+- Must execute efficiently in real-time, avoiding excessive delays on large forms.
+- Local execution preferred; avoid cloud dependencies unless optional.
+- Designed to be extensible—new field types or prompt behaviors can be added via config.
+- Interface should remain responsive during form scan and injection.
 
-- **Save Time**: Fill out forms quickly and easily.
-- **Privacy Guaranteed**: Your data stays with you, securely. You can upload you files without compromising them.
+## Acceptance Criteria
 
-## Business Model
+- Fields matching interrupt criteria must pause and allow live input.
+- Passive fields should autofill based on profile data without user intervention.
+- Preview pane must correctly reflect current status of each detected field.
+- UI must support live interaction without freezing or lag.
+- Profiles and responses should persist between sessions (optional).
 
-The most appealing approach is a freemium model:
+## Visual Aids
 
-- **Free Tier**: Limited number of forms filled per month.
-- **Premium Tier**: Unlimited form fills. We could offer either a one-time purchase for the premium version or a monthly subscription (e.g., 5 forms per month for free, unlimited access at X$/month).
+Here’s a simple conceptual layout using Mermaid syntax:
 
-### Client Profiles
+```mermaid
+flowchart TD
+    A[Scan Page] --> B[Identify Fields]
+    B --> C{Field Type?}
+    C -->|Interrupt| D[Prompt User for Input]
+    C -->|Passive| E[Fill Field Automatically]
+    D --> F[Inject Value]
+    E --> F
+    F --> G[Form Submission]
+```
 
-- **Students**: Applying for internships, scholarships, or events.
-- **Job Seekers**: Sending out job applications.
-- **Apartment Hunters**: Filling out rental applications.
+UI layout sketch (textual):
 
-The common denominator is individuals who care about privacy and value their time.
+- Top: Mode Selector
+- Left Pane: Field Preview
+- Center Pane: Runtime Dialog
+- Bottom: Start/Scan Buttons
