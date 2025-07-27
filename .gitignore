@@ -6,3 +6,4 @@ ollama_data/
 backup/
 activate.*.lnk
 vs.code-workspace
+__pycache__/

@@ -10,7 +10,7 @@ class RuntimeInputDialog(QDialog):
     def __init__(self, label_text, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Manual Input Required")
-        self.layout = QVBoxLayout(self)
+        self.dialog_layout = QVBoxLayout(self)
 
         self.label = QLabel(f"Please provide input for:\n{label_text}")
         self.input_field = QLineEdit()
@@ -18,9 +18,9 @@ class RuntimeInputDialog(QDialog):
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
 
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.input_field)
-        self.layout.addWidget(self.buttons)
+        self.dialog_layout.addWidget(self.label)
+        self.dialog_layout.addWidget(self.input_field)
+        self.dialog_layout.addWidget(self.buttons)
 
     def get_input(self):
         return self.input_field.text()
@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-        self.layout = QVBoxLayout(self.central_widget)
+        self.main_layout = QVBoxLayout(self.central_widget)
 
         # Top controls
         self.controls_layout = QHBoxLayout()
@@ -42,13 +42,13 @@ class MainWindow(QMainWindow):
         self.mode_selector.currentTextChanged.connect(self.model.set_autofill_mode)
         self.controls_layout.addWidget(QLabel("Autofill Mode:"))
         self.controls_layout.addWidget(self.mode_selector)
-        self.layout.addLayout(self.controls_layout)
+        self.main_layout.addLayout(self.controls_layout)
 
         # Field preview
         self.field_preview = QTreeWidget()
         self.field_preview.setColumnCount(3)
         self.field_preview.setHeaderLabels(["ID", "Label", "Value"])
-        self.layout.addWidget(self.field_preview)
+        self.main_layout.addWidget(self.field_preview)
 
         # Trigger buttons
         self.buttons_layout = QHBoxLayout()
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         self.autofill_button.clicked.connect(self.begin_autofill)
         self.buttons_layout.addWidget(self.scan_button)
         self.buttons_layout.addWidget(self.autofill_button)
-        self.layout.addLayout(self.buttons_layout)
+        self.main_layout.addLayout(self.buttons_layout)
 
     def scan_page(self):
         fields = self.model.scan_page()
