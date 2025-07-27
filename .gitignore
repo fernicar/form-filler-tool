@@ -2,3 +2,7 @@
 main.cpython*
 notebooks/
 ollama_data/
+
+backup/
+activate.*.lnk
+vs.code-workspace
