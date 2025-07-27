@@ -162,6 +162,7 @@ This guide highlights modern PySide6 usage patterns and best practices, derived 
 - Use `QInputDialog.getText(parent, title, label)` for simple text input. Context from: `best_gui.py` (Find feature)
 - Use `QMessageBox.information(parent, title, message)` for informational popups. Context from: `best_gui.py` (Find feature)
 - Use `QDialog` as a base for custom dialogs. Context from: `best_gui.py` (Replace feature)
+- Use `QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)` for modern dialog buttons.
 
 ### QtQml
 

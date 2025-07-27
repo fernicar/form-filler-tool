@@ -14,7 +14,7 @@ class RuntimeInputDialog(QDialog):
 
         self.label = QLabel(f"Please provide input for:\n{label_text}")
         self.input_field = QLineEdit()
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
 
